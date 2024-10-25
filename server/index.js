@@ -1,6 +1,6 @@
+require('dotenv').config();
 const express = require('express');
 const { google } = require('googleapis');
-const keys = require('./credentials.json');
 const cors = require('cors');
 
 const app = express();
@@ -8,18 +8,17 @@ const PORT = 3001;
 
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173', // Permitir este origen
+  origin: 'http://localhost:5173',
 }));
 
 // Autenticación con Google Sheets
 const client = new google.auth.JWT(
-  keys.client_email,
+  process.env.GOOGLE_CLIENT_EMAIL,
   null,
-  keys.private_key,
+  process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
   ['https://www.googleapis.com/auth/spreadsheets']
 );
 
-// Conectar con Google Sheets
 client.authorize(function (err, tokens) {
   if (err) {
     console.error('Error connecting to Google Sheets:', err);
