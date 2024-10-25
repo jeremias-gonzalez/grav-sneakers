@@ -5,7 +5,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import DataProvider from './assets/components/Context/DataContext';
 import ProductDetail from './assets/components/ProductDetail/ProductDetail';
 import Loader from './assets/components/ui/loader'; // Importa el componente Loader
-import BigCart from './assets/components/BigCart/BIgCart';
+import BigCart from "./assets/components/BigCart/BigCart";
+
 
 // Lazy loading del componente Categorias
 const Categorias = lazy(() =>
