@@ -1,3 +1,4 @@
-server/credential.json
+server/credentials.json
+server/credenciales.json
 server/node_modules/
 server/.env
