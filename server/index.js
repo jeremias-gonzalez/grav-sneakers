@@ -6,10 +6,24 @@ const cors = require('cors');
 const app = express();
 const PORT = 3001;
 
-app.use(express.json());
+// Lista de orígenes permitidos
+const allowedOrigins = [
+  'http://localhost:5173', // Para desarrollo local
+  'https://grav-sneakers-mxzcu2e97-jeremias-gonzalezs-projects.vercel.app', // Para Vercel
+];
+
+// Configuración de CORS
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
 }));
+
+app.use(express.json());
 
 // Autenticación con Google Sheets
 const client = new google.auth.JWT(
@@ -19,7 +33,7 @@ const client = new google.auth.JWT(
   ['https://www.googleapis.com/auth/spreadsheets']
 );
 
-client.authorize(function (err, tokens) {
+client.authorize((err, tokens) => {
   if (err) {
     console.error('Error connecting to Google Sheets:', err);
     return;
@@ -36,13 +50,13 @@ app.get('/', (req, res) => {
 app.get('/api/sheet-data', async (req, res) => {
   const gsapi = google.sheets({ version: 'v4', auth: client });
   const options = {
-    spreadsheetId: '14JIBAQ90WU7_3g8RBe11B7PC-G-7kzUx-v_87P3x2Yw', // Coloca aquí tu ID de Google Sheets
+    spreadsheetId: '14JIBAQ90WU7_3g8RBe11B7PC-G-7kzUx-v_87P3x2Yw', // ID de Google Sheets
     range: 'Products!A2:E',
   };
 
   try {
-    let data = await gsapi.spreadsheets.values.get(options);
-    let rows = data.data.values;
+    const data = await gsapi.spreadsheets.values.get(options);
+    const rows = data.data.values;
 
     // Imprimir data para depuración
     console.log('Data from Google Sheets:', data);
@@ -61,8 +75,6 @@ app.get('/api/sheet-data', async (req, res) => {
     });
   }
 });
-
-// Ruta para agregar un pedido
 app.post('/api/add-order', async (req, res) => {
   const {
     customerName,
@@ -108,8 +120,6 @@ app.post('/api/add-order', async (req, res) => {
     });
   }
 });
-
-
 
 
 // Iniciar el servidor

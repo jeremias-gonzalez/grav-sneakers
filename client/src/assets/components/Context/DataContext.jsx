@@ -6,7 +6,6 @@ export const DataContext = createContext();
 
 const DataProvider = ({ children }) => {
   const [data, setData] = useState([]);
-  
   const [cart, setCart] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -25,28 +24,39 @@ const DataProvider = ({ children }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/api/sheet-data");
-        // console.log(res.data); // Para verificar los datos
-    
-        // Asumiendo que cada producto es un arreglo con las columnas en el orden: id, brand, model, price, image
+        //const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3001"; // Opción 1
+        const apiUrl = window.location.hostname === 'localhost' ? "http://localhost:3001" : "https://grav-qv5oy1fo8-jeremias-gonzalezs-projects.vercel.app"; // Opción 2
+  
+        const res = await axios.get(`${apiUrl}/api/sheet-data`);
+        
         const formattedData = res.data.map(product => ({
-          id: product[0],                     // id
-          brand: product[1],                  // brand
-          model: product[2],                  // model
-          price: parseFloat(product[3].replace('.', '').replace(',', '.')) || null, // Limpieza del precio
-          image: product[4],               // image
+          id: product[0],
+          brand: product[1],
+          model: product[2],
+          price: parseFloat(product[3].replace('.', '').replace(',', '.')) || null,
+          image: product[4],
         }));
-    
-        setData(formattedData); // Guarda los datos transformados
+        
+        setData(formattedData);
       } catch (error) {
         console.error("Error al cargar los datos", error);
       }
     };
     fetchData();
+ 
   }, []);
-
+  
   return (
-    <DataContext.Provider value={{ data, cart, setCart, selectedProduct, setSelectedProduct, isCartOpen, toggleCart, filters, setFilters ,
+    <DataContext.Provider value={{ 
+      data, 
+      cart, 
+      setCart, 
+      selectedProduct, 
+      setSelectedProduct, 
+      isCartOpen, 
+      toggleCart, 
+      filters, 
+      setFilters,
       orderForm,    // Exponemos el estado del formulario de pedido
       setOrderForm  // Exponemos la función para modificar el estado del formulario de pedido
     }}>
