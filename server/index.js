@@ -9,7 +9,7 @@ const PORT = 3001;
 // Lista de orígenes permitidos
 const allowedOrigins = [
   'http://localhost:5173', // Para desarrollo local
-  'https://grav-sneakers-tau.vercel.app', // Para Vercel
+  'https://grav-sneakers-front.vercel.app/', // Para Vercel
 ];
 
 // Configuración de CORS
