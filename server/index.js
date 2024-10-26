@@ -7,21 +7,22 @@ const app = express();
 const PORT = 3001;
 
 // Lista de orígenes permitidos
-const allowedOrigins = [
-  'http://localhost:5173', // Para desarrollo local
-  'https://grav-sneakers-front.vercel.app/', // Para Vercel
-];
+app.use(cors({
+  origin: 'https://grav-sneakers-front.vercel.app', // Permite solicitudes de tu frontend
+  methods: ['GET', 'POST'], // Métodos permitidos
+  credentials: true // Permite cookies
+}));
 
 // Configuración de CORS
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-}));
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+// }));
 
 app.use(express.json());
 
