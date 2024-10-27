@@ -24,7 +24,9 @@ const DataProvider = ({ children }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = "https://grav-sneakers-one.vercel.app" // Opción 1
+        const apiUrl = window.location.hostname === 'localhost'
+  ? "http://localhost:3001"
+  : "https://grav-sneakers-server.vercel.app"; // Opción 1
 
     // Concatenar el endpoint específico en la solicitud
     const res = await axios.get(`${apiUrl}/api/sheet-data`);
