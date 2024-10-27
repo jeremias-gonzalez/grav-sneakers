@@ -86,7 +86,7 @@ const BigCart = () => {
     };
 
     try {
-      const response = await fetch('https://grav-sneakers-server.onrender.com/api/add-order', {
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/add-order`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

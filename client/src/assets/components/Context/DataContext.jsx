@@ -27,7 +27,7 @@ const DataProvider = ({ children }) => {
   //       const apiUrl = window.location.hostname === 'localhost'
   // ? "http://localhost:3001"
   // : "https://grav-sneakers-server.onrender.com"; // Opción 1
-       const apiUrl = "https://grav-sneakers-server.onrender.com";
+  const apiUrl = import.meta.env.VITE_REACT_APP_BACKEND_BASEURL;
     // Concatenar el endpoint específico en la solicitud
     const res = await axios.get(`${apiUrl}/api/sheet-data`);
         const formattedData = res.data.map(product => ({
