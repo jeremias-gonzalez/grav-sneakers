@@ -9,13 +9,8 @@ const PORT = process.env.PORT || 3001;
 // Lista de orígenes permitidos
 const allowedOrigins = [
   'http://localhost:5173', // Para desarrollo local
-  // 'https://grav-sneakers-front.vercel.app/', // Para Vercel
+  'https://grav-sneakers-front.vercel.app', // Para Vercel
 ];
-// app.use(cors({
-//   origin: 'https://grav-sneakers-front.vercel.app', // Permite solicitudes de tu frontend
-//   methods: ['GET', 'POST'], // Métodos permitidos
-//   credentials: true // Permite cookies
-// }));
 
 // Configuración de CORS
 app.use(cors({
@@ -51,6 +46,11 @@ app.get('/', (req, res) => {
   res.send('Servidor funcionando correctamente');
 });
 
+// Endpoint de prueba
+app.get('/api/test', (req, res) => {
+  res.send("Servidor activo y funcionando en producción");
+});
+
 // Ruta para obtener datos de Google Sheets
 app.get('/api/sheet-data', async (req, res) => {
   const gsapi = google.sheets({ version: 'v4', auth: client });
@@ -80,6 +80,7 @@ app.get('/api/sheet-data', async (req, res) => {
     });
   }
 });
+
 app.post('/api/add-order', async (req, res) => {
   const {
     customerName,
@@ -125,7 +126,6 @@ app.post('/api/add-order', async (req, res) => {
     });
   }
 });
-
 
 // Iniciar el servidor
 app.listen(PORT, () => {
