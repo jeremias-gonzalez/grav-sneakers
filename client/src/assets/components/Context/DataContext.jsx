@@ -24,10 +24,10 @@ const DataProvider = ({ children }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = window.location.hostname === 'localhost'
-  ? "http://localhost:3001"
-  : "https://grav-sneakers-server.onrender.com"; // Opción 1
-
+  //       const apiUrl = window.location.hostname === 'localhost'
+  // ? "http://localhost:3001"
+  // : "https://grav-sneakers-server.onrender.com"; // Opción 1
+       const apiUrl = "https://grav-sneakers-server.onrender.com";
     // Concatenar el endpoint específico en la solicitud
     const res = await axios.get(`${apiUrl}/api/sheet-data`);
         const formattedData = res.data.map(product => ({
