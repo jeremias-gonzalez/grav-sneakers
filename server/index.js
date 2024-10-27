@@ -4,7 +4,7 @@ const { google } = require('googleapis');
 const cors = require('cors');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Lista de orígenes permitidos
 const allowedOrigins = [
