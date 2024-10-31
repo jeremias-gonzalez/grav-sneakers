@@ -193,36 +193,36 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
-mercadopago.configure({
-  // Configura tus credenciales de Mercado Pago
-  access_token: 'TU_ACCESS_TOKEN',
-});
+// mercadopago.configure({
+//   // Configura tus credenciales de Mercado Pago
+//   access_token: 'TU_ACCESS_TOKEN',
+// });
 
-router.post('/api/create-preference', async (req, res) => {
-  const { items, totalPrice } = req.body;
+// router.post('/api/create-preference', async (req, res) => {
+//   const { items, totalPrice } = req.body;
 
-  const preference = {
-    items: items.map(item => ({
-      title: item.brand + ' ' + item.model,
-      unit_price: item.price,
-      quantity: item.quantity,
-    })),
-    back_urls: {
-      success: 'http://localhost:3000/success', // Redirige aquí después de una compra exitosa
-      failure: 'http://localhost:3000/failure',
-      pending: 'http://localhost:3000/pending',
-    },
-    auto_return: 'approved',
-  };
+//   const preference = {
+//     items: items.map(item => ({
+//       title: item.brand + ' ' + item.model,
+//       unit_price: item.price,
+//       quantity: item.quantity,
+//     })),
+//     back_urls: {
+//       success: 'http://localhost:3000/success', // Redirige aquí después de una compra exitosa
+//       failure: 'http://localhost:3000/failure',
+//       pending: 'http://localhost:3000/pending',
+//     },
+//     auto_return: 'approved',
+//   };
 
-  try {
-    const response = await mercadopago.preferences.create(preference);
-    res.json({ init_point: response.body.init_point });
-  } catch (error) {
-    console.error('Error creating Mercado Pago preference:', error);
-    res.status(500).send('Error creating Mercado Pago preference');
-  }
-});
+//   try {
+//     const response = await mercadopago.preferences.create(preference);
+//     res.json({ init_point: response.body.init_point });
+//   } catch (error) {
+//     console.error('Error creating Mercado Pago preference:', error);
+//     res.status(500).send('Error creating Mercado Pago preference');
+//   }
+// });
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Backend running at http://localhost:${PORT}`);
