@@ -2,9 +2,16 @@ require('dotenv').config();
 const express = require('express');
 const { google } = require('googleapis');
 const cors = require('cors');
-
 const app = express();
 const PORT =  3001;
+// const mercadopago = require('mercadopago');
+
+// // Configurar Mercado Pago
+// mercadopago.configure({
+//   access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+//   // También puedes incluir el modo (test o producción) si es necesario
+//   // mode: 'test',
+// });
 
 // Lista de orígenes permitidos
 const allowedOrigins = [
@@ -40,6 +47,7 @@ client.authorize((err, tokens) => {
   }
   console.log('Connected to Google Sheets');
 });
+
 
 // Ruta para la raíz
 app.get('/', (req, res) => {
@@ -160,28 +168,32 @@ app.get('/api/orders', async (req, res) => {
     const response = await gsapi.spreadsheets.values.get(options);
     const rows = response.data.values || [];
 
+    console.log('Filas obtenidas:', rows); // Para verificar los datos obtenidos
+
     // Mapeo de los datos a un formato adecuado
     const orders = rows.map((row) => {
       return {
-        customerName: row[0],       // Suponiendo que la columna A es el nombre
-        customerSurname: row[1],    // Suponiendo que la columna B es el apellido
-        customerDNI: row[2],        // Columna C
-        customerTelefono: row[3],   // Columna D
-        shippingMethod: row[4],     // Columna E
-        customerEmail: row[5],      // Columna F
+        customerName: row[0] || 'Sin nombre',       // Suponiendo que la columna A es el nombre
+        customerSurname: row[1] || 'Sin apellido',   // Suponiendo que la columna B es el apellido
+        customerDNI: row[2] || 'Sin DNI',            // Columna C
+        customerTelefono: row[3] || 'Sin teléfono',   // Columna D
+        shippingMethod: row[4] || 'Sin método de envío', // Columna E
+        customerEmail: row[5] || 'Sin email',        // Columna F
         address: {
-          street: row[6],           // Columna G
-          number: row[7],           // Columna H
-          piso: row[8],             // Columna I
-          depto: row[9],            // Columna J
-          city: row[10],            // Columna K
-          province: row[11],        // Columna L
+          street: row[6] || 'Sin dirección',          // Columna G
+          number: row[7] || 'Sin número',             // Columna H
+          piso: row[8] || 'Sin piso',                 // Columna I
+          depto: row[9] || 'Sin departamento',        // Columna J
+          city: row[10] || 'Sin ciudad',              // Columna K
+          province: row[11] || 'Sin provincia',       // Columna L
         },
-        products: JSON.parse(row[12]), // Suponiendo que la columna M contiene los productos en formato JSON
-        totalPrice: row[13],        // Columna N
-        paymentMethod: row[14],     // Columna O
+        products: row[12] ? JSON.parse(row[12]) : [], // Asegúrate de que la columna M tenga un JSON válido
+        totalPrice: row[13] || 'N/A',                 // Columna N
+        paymentMethod: row[14] || 'Sin método de pago', // Columna O
       };
     });
+
+    console.log('Órdenes transformadas:', orders); // Verifica la estructura de órdenes
 
     res.status(200).json(orders);
   } catch (error) {
@@ -193,36 +205,40 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
-// mercadopago.configure({
-//   // Configura tus credenciales de Mercado Pago
-//   access_token: 'TU_ACCESS_TOKEN',
-// });
 
-// router.post('/api/create-preference', async (req, res) => {
-//   const { items, totalPrice } = req.body;
+// app.post('/api/create-preference', async (req, res) => {
+//   const { cartItems, customerEmail } = req.body;
 
+//   // Crear items para Mercado Pago
+//   const items = cartItems.map((item) => ({
+//     title: item.brand && item.model,  // Reemplaza "name" con el nombre del producto
+//     unit_price: item.price, // Reemplaza "price" con el precio del producto
+//     quantity: item.quantity, // Reemplaza "quantity" con la cantidad del producto
+//   }));
+
+//   // Configurar preferencia
 //   const preference = {
-//     items: items.map(item => ({
-//       title: item.brand + ' ' + item.model,
-//       unit_price: item.price,
-//       quantity: item.quantity,
-//     })),
+//     items: items,
+//     payer: {
+//       email: customerEmail,
+//     },
 //     back_urls: {
-//       success: 'http://localhost:3000/success', // Redirige aquí después de una compra exitosa
-//       failure: 'http://localhost:3000/failure',
-//       pending: 'http://localhost:3000/pending',
+//       success: `${process.env.FRONTEND_URL}/success`,
+//       failure: `${process.env.FRONTEND_URL}/failure`,
+//       pending: `${process.env.FRONTEND_URL}/pending`,
 //     },
 //     auto_return: 'approved',
 //   };
 
 //   try {
 //     const response = await mercadopago.preferences.create(preference);
-//     res.json({ init_point: response.body.init_point });
+//     res.json({ id: response.body.id }); // ID de la preferencia para redirigir al pago
 //   } catch (error) {
-//     console.error('Error creating Mercado Pago preference:', error);
-//     res.status(500).send('Error creating Mercado Pago preference');
+//     console.error('Error al crear la preferencia de pago:', error);
+//     res.status(500).send('Error al crear la preferencia de pago');
 //   }
 // });
+
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Backend running at http://localhost:${PORT}`);

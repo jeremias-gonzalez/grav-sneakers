@@ -145,6 +145,55 @@ const BigCart = () => {
     const link = generateWhatsAppLink(cart, totalPrice);
     window.open(link, '_blank');
   };
+  // const handleCheckout = async (event) => {
+  //   event.preventDefault();
+    
+  //   // Evitar múltiples envíos
+  //   if (isProcessing) return;
+    
+  //   setIsProcessing(true);
+  
+  //   // Enviar los datos del pedido
+  //   try {
+  //     const orderResponse = await fetch('https://tu-backend-url/api/add-order', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(orderData), // orderData contiene los detalles del pedido
+  //     });
+  
+  //     if (!orderResponse.ok) {
+  //       throw new Error('Error al enviar el pedido');
+  //     }
+  
+  //     // Redirigir según el método de pago seleccionado
+  //     if (paymentMethod === 'transferencia bancaria') {
+  //       setOrderSubmitted(true); // Esto mostrará el Bank detail
+  //     } else if (paymentMethod === 'mercado_pago') {
+  //       // Redireccionar al checkout de Mercado Pago
+  //       const mercadoPagoResponse = await fetch('https://tu-backend-url/api/mercado-pago', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify(orderData),
+  //       });
+  
+  //       const mercadoPagoData = await mercadoPagoResponse.json();
+  //       if (mercadoPagoData.init_point) {
+  //         window.location.href = mercadoPagoData.init_point; // Redireccionar al checkout de Mercado Pago
+  //       } else {
+  //         throw new Error('Error al generar el link de Mercado Pago');
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error en el proceso de checkout:', error);
+  //     alert('Hubo un error al procesar el pedido. Inténtalo de nuevo.');
+  //   } finally {
+  //     setIsProcessing(false);
+  //   }
+ // };
   return (
     <>
       <Navbar />
@@ -419,7 +468,8 @@ const BigCart = () => {
                       className='montserrat2 bg-custom-blue text-white p-2 rounded-xl'
                         type="submit"
                         disabled={isProcessing}
-                        style={{ display: orderSubmitted ? 'none' : 'block' }} // Ocultar el botón si el pedido fue enviado
+                        style={{ display: orderSubmitted ? 'none' : 'block' }}
+                         // Ocultar el botón si el pedido fue enviado
                       >
                         Finalizar Pedido
                       </button>
