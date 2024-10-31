@@ -42,7 +42,7 @@ const PaymentMethod = ({ onSelectPayment }) => (
      </div>
      </div>
     </label>
-    <label className='rounded-lg flex border border-custom-blue md:w-full w-full p-2'>
+    {/* <label className='rounded-lg flex border border-custom-blue md:w-full w-full p-2'>
         <input
           className='mx-2 hidden-radio'
           type="radio"
@@ -58,7 +58,7 @@ const PaymentMethod = ({ onSelectPayment }) => (
             <p className='montserrat text-xs md:text-sm md:mx-4'>Realiza tu pago de forma segura</p>
           </div>
         </div>
-      </label>
+      </label> */}
     </div>
   </div>
 );

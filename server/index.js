@@ -161,39 +161,33 @@ app.get('/api/orders', async (req, res) => {
   const gsapi = google.sheets({ version: 'v4', auth: client });
   const options = {
     spreadsheetId: '1C81BRGg-U8eJLFXXGYIPEwdkOMwWbsWXIKcYVWz68gY',
-    range: 'pedidos!A2:O', // Ajusta este rango según tus columnas
+    range: 'pedidos!A2:O', // Ajusta el rango según tus columnas
   };
 
   try {
     const response = await gsapi.spreadsheets.values.get(options);
     const rows = response.data.values || [];
 
-    console.log('Filas obtenidas:', rows); // Para verificar los datos obtenidos
-
     // Mapeo de los datos a un formato adecuado
     const orders = rows.map((row) => {
       return {
-        customerName: row[0] || 'Sin nombre',       // Suponiendo que la columna A es el nombre
-        customerSurname: row[1] || 'Sin apellido',   // Suponiendo que la columna B es el apellido
-        customerDNI: row[2] || 'Sin DNI',            // Columna C
-        customerTelefono: row[3] || 'Sin teléfono',   // Columna D
-        shippingMethod: row[4] || 'Sin método de envío', // Columna E
-        customerEmail: row[5] || 'Sin email',        // Columna F
+        customerName: row[0] || 'Sin nombre',       
+        customerSurname: row[1] || 'Sin apellido',   
+        customerDNI: row[2] || 'Sin DNI',            
+        customerTelefono: row[3] || 'Sin teléfono',   
+        shippingMethod: row[4] || 'Sin método de envío',
+        customerEmail: row[5] || 'Sin email',        
         address: {
-          street: row[6] || 'Sin dirección',          // Columna G
-          number: row[7] || 'Sin número',             // Columna H
-          piso: row[8] || 'Sin piso',                 // Columna I
-          depto: row[9] || 'Sin departamento',        // Columna J
-          city: row[10] || 'Sin ciudad',              // Columna K
-          province: row[11] || 'Sin provincia',       // Columna L
+          street: row[6] || 'Sin dirección',
+          number: row[7] || 'Sin número',
+          city: row[10] || 'Sin ciudad',
+          province: row[11] || 'Sin provincia',
         },
-        products: row[12] ? JSON.parse(row[12]) : [], // Asegúrate de que la columna M tenga un JSON válido
-        totalPrice: row[13] || 'N/A',                 // Columna N
-        paymentMethod: row[14] || 'Sin método de pago', // Columna O
+        cartItems: row[12] ? JSON.parse(row[12]) : [], // Cambia a cartItems
+        totalPrice: row[13] || 'N/A',                 
+        paymentMethod: row[14] || 'Sin método de pago',
       };
     });
-
-    console.log('Órdenes transformadas:', orders); // Verifica la estructura de órdenes
 
     res.status(200).json(orders);
   } catch (error) {
@@ -204,6 +198,37 @@ app.get('/api/orders', async (req, res) => {
     });
   }
 });
+
+app.post('/api/add-product', async (req, res) => {
+  console.log("Datos recibidos:", req.body); // Imprime los datos recibidos
+  const {id, brand, model, price, image } = req.body;
+
+  // Verifica si hay campos vacíos
+  if (!id || !brand || !model || !price || !image) {
+    return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+  }
+
+  const gsapi = google.sheets({ version: 'v4', auth: client });
+  const options = {
+    spreadsheetId: '1C81BRGg-U8eJLFXXGYIPEwdkOMwWbsWXIKcYVWz68gY',
+    range: 'productos!A:G', // Asegúrate de que esto refleje la cantidad de columnas que tienes
+    valueInputOption: 'RAW',
+    resource: {
+      values: [[id, brand, model, price, image]], // Asegúrate de que esto sea lo que esperas
+    },
+  };
+
+  try {
+    const result = await gsapi.spreadsheets.values.append(options);
+    console.log("Resultado de Google Sheets:", result.data); // Imprime el resultado
+    res.status(200).json({ message: 'Producto agregado con éxito' });
+  } catch (error) {
+    console.error('Error al agregar el producto:', error.message); // Imprime el mensaje de error
+    console.error('Detalles del error:', error); // Imprime el objeto completo del error
+    res.status(500).json({ error: 'Error al agregar el producto', details: error.message });
+  }
+});
+
 
 
 // app.post('/api/create-preference', async (req, res) => {

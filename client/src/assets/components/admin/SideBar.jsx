@@ -115,12 +115,12 @@ const SideBar = () => {
               </button>
               <ul id="dropdown-example" className={`py-2 space-y-2 ${isDropdownOpen ? '' : 'hidden'}`}>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to ='/admin/productos'
                     className="flex items-center montserrat2 text-white w-full p-2  transition duration-75 rounded-lg pl-11  hover:text-custom-blue group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
                   >
                     Productos
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <Link
@@ -142,7 +142,7 @@ const SideBar = () => {
             </li> 
             <li>
               <Link
-                to='/orders'
+                to='/admin/orders'
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
               >
                 <svg

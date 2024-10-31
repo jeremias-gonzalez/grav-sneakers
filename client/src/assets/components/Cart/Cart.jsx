@@ -27,7 +27,7 @@ const Cart = () => {
       setLoading(true);
       const timer = setTimeout(() => {
         setLoading(false);
-      }, 2000);
+      }, 100);
 
       return () => clearTimeout(timer); // Limpia el timeout si el componente se desmonta
     }
@@ -95,12 +95,12 @@ const Cart = () => {
                     {/* Cargando el contenido del carrito o mostrando el Loader */}
                     {loading ? (
                       <div className='flex justify-center my-[25rem] md:my-[12rem]'>
-                      <Loader />
+                      {/* <Loader /> */}
                       </div> // Muestra el Loader mientras se carga
                     ) : (
-                      <Suspense fallback={<div className='flex justify-center'> <Loader /> </div>}>
+                      //<Suspense fallback={<div className='flex justify-center'> <Loader /> </div>}>
                         <CartContent />
-                      </Suspense>
+                     // </Suspense>
                     )}
                   </div>
                 </div>
