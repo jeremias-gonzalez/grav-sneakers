@@ -32,7 +32,7 @@ const PaymentMethod = ({ onSelectPayment }) => (
         value="transferencia"
         onChange={(e) => onSelectPayment(e.target.value)}
       />
-       <label htmlFor="domicilio" className="custom-radio"></label>
+       <label htmlFor="sucursal" className="custom-radio"></label>
       <div className='flex gap-3'>
        <img className='w-10 h-10 my-4 md:my-4 md:h-16 md:w-16' src="https://dk0k1i3js6c49.cloudfront.net/iconos-pago/iconos-checkout/bank-payment-icon.png" alt="" />
      
@@ -54,18 +54,18 @@ const BigCart = () => {
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerTelefono, setCustomerTelefono] = useState('');
   const [shippingMethod, setShippingMethod] = useState('sucursal');
-  const [address, setAddress] = useState({ street: '', number: '', piso: '', depto: '',city: '', province: '', postalCode: '' });
+  const [address, setAddress] = useState({ street: '', number: '', piso: '', depto: '', city: '', province: '', postalCode: '' });
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [orderSubmitted, setOrderSubmitted] = useState(false); // Estado para manejar la finalización del pedido
-  const [showPaymentMethods, setShowPaymentMethods] = useState(true); // Nuevo estado para controlar la visibilidad de los métodos de pago
+  const [orderSubmitted, setOrderSubmitted] = useState(false);
+  const [showPaymentMethods, setShowPaymentMethods] = useState(true);
 
   const cartSubtotal = useMemo(() => {
     return cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   }, [cart]);
 
-  const shippingCost = shippingMethod === 'sucursal' ? 6167 : 8000;
+  const shippingCost = shippingMethod === 'sucursal' ? 6167 : shippingMethod === 'domicilio' ? 8000 : 0;
   const totalPrice = cartSubtotal + shippingCost;
 
   const handleSubmitOrder = async (e) => {
@@ -96,8 +96,8 @@ const BigCart = () => {
 
       if (response.ok) {
         console.log('Pedido enviado con éxito');
-        setOrderSubmitted(true); // Establecer estado para mostrar el mensaje de agradecimiento
-        setShowPaymentMethods(false); // Ocultar métodos de pago al finalizar el pedido
+        setOrderSubmitted(true);
+        setShowPaymentMethods(false);
       } else {
         console.error('Error al enviar el pedido:', response.statusText);
         alert('Hubo un error al realizar el pedido');
@@ -109,6 +109,7 @@ const BigCart = () => {
       setIsProcessing(false);
     }
   };
+
   const generateWhatsAppLink = (cart, total) => {
     const baseUrl = 'https://api.whatsapp.com/send?phone=543585181780';
     let message = 'Hola!👟, realicé la compra de los siguientes productos y aqui va mi comprobante!:\n';
@@ -184,8 +185,25 @@ const BigCart = () => {
                      <p className='montserrat '> Entre 6 a 9 dias habiles - $8.000</p> 
                      </div>
                     </label>
+                    <label className='rounded-lg gap-3 p-2 flex border border-custom-blue w-25'>
+                        <input
+                          className='hidden-radio'
+                          type="radio"
+                          id="showroom"
+                          name="shippingMethod"
+                          value="showroom"
+                          checked={shippingMethod === 'showroom'}
+                          onChange={(e) => setShippingMethod(e.target.value)}
+                        />
+                        <label htmlFor="showroom" className="custom-radio"></label>
+                        <div className='flex flex-col'>
+                          <p className='montserrat2 uppercase'>Nuestro Showroom - Gratis</p>
+                          <p className='montserrat'>Retiro inmediato en nuestro showroom</p>
+                        </div>
+                      </label>
                   </div>
                 </div>
+               
                   <h3 className='montserrat uppercase my-5'>Datos del Destinatario</h3>
                   <div className='grid grid-cols-2 grid-rows-1 gap-3'>
                   <div className="input-group">
@@ -249,7 +267,7 @@ const BigCart = () => {
                     </div>
                   </div>
                 </div>
-
+       
                 {/* Sección del Método de Envío */}
                
 
@@ -339,37 +357,38 @@ const BigCart = () => {
                   </div>
                 )}
 
-              <button
-                type="button"
-                className="next-button montserrat2 bg-custom-blue text-white p-2 rounded-xl"
-                onClick={() => {
-                  if (
-                    customerName &&
-                    customerSurname &&
-                    customerEmail &&
-                    customerDNI &&
-                    (shippingMethod === 'sucursal' || 
+            <button
+              type="button"
+              className="next-button montserrat2 bg-custom-blue text-white p-2 rounded-xl"
+              onClick={() => {
+                if (
+                  customerName &&
+                  customerSurname &&
+                  customerEmail &&
+                  customerDNI &&
+                  (
+                    shippingMethod === 'sucursal' || 
+                    shippingMethod === 'showroom' || // Añadido para que avance con "showroom"
                     (
                       address.street && 
                       address.number && 
                       address.city && 
                       address.province && 
                       (
-                        // Caso 1: piso y depto no están presentes
                         (!address.piso && !address.depto) || 
-                        // Caso 2: ambos campos están presentes
                         (address.piso && address.depto)
                       )
-                    ))
-                  ) {
-                    setShowPayment(true);
-                  } else {
-                    alert('Por favor, completa todos los campos requeridos antes de continuar.');
-                  }
-                }}
-              >
-                Siguiente
-              </button>
+                    )
+                  )
+                ) {
+                  setShowPayment(true);
+                } else {
+                  alert('Por favor, completa todos los campos requeridos antes de continuar.');
+                }
+              }}
+            >
+              Siguiente
+            </button>
 
               </>
             ) : (

@@ -87,36 +87,125 @@ app.post('/api/add-order', async (req, res) => {
     customerSurname,
     customerDNI,
     customerTelefono,
+    shippingMethod,
     customerEmail,
-    address: { street, number, piso, depto, city, province },
+    address,
     cartItems,
-    totalPrice // Incluye el totalPrice si deseas guardarlo
+    totalPrice,
+    paymentMethod,
   } = req.body;
 
-  // Agregar log para ver los datos recibidos
-  console.log('Datos recibidos:', req.body);
+  // Separar los datos de la dirección si existen
+  const { street, number, piso, depto, city, province } = address || {};
 
-  // Validar datos: pisos y deptos son opcionales
-  if (!customerName || !customerSurname || !customerDNI || !customerTelefono || !customerEmail || !street || !number || !city || !province || !cartItems || cartItems.length === 0) {
+  // Validación condicional de datos según el método de envío
+  if (!customerName || !customerSurname || !customerDNI || !customerTelefono || !shippingMethod || !customerEmail || !cartItems || cartItems.length === 0 || !paymentMethod) {
     return res.status(400).send({ message: 'Faltan datos necesarios' });
+  }
+
+  // Validar datos adicionales solo si es envío a domicilio
+  if (shippingMethod === 'domicilio' && (!street || !number || !city || !province)) {
+    return res.status(400).send({ message: 'Faltan datos de domicilio' });
   }
 
   const gsapi = google.sheets({ version: 'v4', auth: client });
   const options = {
-    spreadsheetId: '1C81BRGg-U8eJLFXXGYIPEwdkOMwWbsWXIKcYVWz68gY', // Cambia por tu ID de hoja de cálculo
-    range: 'pedidos!A2:G', // Cambia por tu rango deseado
+    spreadsheetId: '1C81BRGg-U8eJLFXXGYIPEwdkOMwWbsWXIKcYVWz68gY',
+    range: 'pedidos!A2:O',
     valueInputOption: 'RAW',
     resource: {
       values: [
-        [customerName, customerSurname, customerDNI, customerTelefono, customerEmail, street, number, piso || '', depto || '', city, province, JSON.stringify(cartItems), totalPrice], // Usa '' si piso o depto son undefined
+        [
+          customerName,
+          customerSurname,
+          customerDNI,
+          customerTelefono,
+          shippingMethod,
+          customerEmail,
+          street || '',     // Datos de domicilio, opcionales si es envío a sucursal
+          number || '',
+          piso || '',
+          depto || '',
+          city || '',
+          province || '',
+          JSON.stringify(cartItems),
+          totalPrice,
+          paymentMethod,
+        ],
       ],
     },
   };
 
   try {
-    console.log('Intentando agregar orden a Google Sheets...');
     await gsapi.spreadsheets.values.append(options);
-    console.log('Orden agregada a Google Sheets exitosamente');
+    res.status(201).send('Orden creada exitosamente');
+  } catch (error) {
+    console.error('Error al agregar la orden a Google Sheets:', error);
+    res.status(500).send({
+      message: 'Error interno del servidor',
+      error: error.message || 'Error desconocido',
+    });
+  }
+});
+
+
+app.get('/api/add-order', async (req, res) => {
+  const {
+    customerName,
+    customerSurname,
+    customerDNI,
+    customerTelefono,
+    shippingMethod,
+    customerEmail,
+    address,
+    cartItems,
+    totalPrice,
+    paymentMethod,
+  } = req.body;
+
+  // Separar los datos de la dirección si existen
+  const { street, number, piso, depto, city, province } = address || {};
+
+  // Validación condicional de datos según el método de envío
+  if (!customerName || !customerSurname || !customerDNI || !customerTelefono || !shippingMethod || !customerEmail || !cartItems || cartItems.length === 0 || !paymentMethod) {
+    return res.status(400).send({ message: 'Faltan datos necesarios' });
+  }
+
+  // Validar datos adicionales solo si es envío a domicilio
+  if (shippingMethod === 'domicilio' && (!street || !number || !city || !province)) {
+    return res.status(400).send({ message: 'Faltan datos de domicilio' });
+  }
+
+  const gsapi = google.sheets({ version: 'v4', auth: client });
+  const options = {
+    spreadsheetId: '1C81BRGg-U8eJLFXXGYIPEwdkOMwWbsWXIKcYVWz68gY',
+    range: 'pedidos!A2:O',
+    valueInputOption: 'RAW',
+    resource: {
+      values: [
+        [
+          customerName,
+          customerSurname,
+          customerDNI,
+          customerTelefono,
+          shippingMethod,
+          customerEmail,
+          street || '',     // Datos de domicilio, opcionales si es envío a sucursal
+          number || '',
+          piso || '',
+          depto || '',
+          city || '',
+          province || '',
+          JSON.stringify(cartItems),
+          totalPrice,
+          paymentMethod,
+        ],
+      ],
+    },
+  };
+
+  try {
+    await gsapi.spreadsheets.values.append(options);
     res.status(201).send('Orden creada exitosamente');
   } catch (error) {
     console.error('Error al agregar la orden a Google Sheets:', error);

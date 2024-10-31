@@ -157,7 +157,7 @@ const CartElements = () => {
             >
               <div className='flex'>
               Ir al Carrito   
-              <svg width="3%" height="3%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-custom-blue  mt-[.3rem] w-3 mx-1 md:w-4 md:mt-[.3rem] md:ml-[.2rem]">
+              <svg width="3%" height="3%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-custom-blue  mt-[.3rem] w-3 mx-1 md:w-4 md:mt-[.3rem] md:ml-[.2rem]">
                 <path d="M4 12H20M20 12L14 6M20 12L14 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>  
                </div>
