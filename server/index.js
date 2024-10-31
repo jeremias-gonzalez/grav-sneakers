@@ -149,66 +149,43 @@ app.post('/api/add-order', async (req, res) => {
 });
 
 
-app.get('/api/add-order', async (req, res) => {
-  const {
-    customerName,
-    customerSurname,
-    customerDNI,
-    customerTelefono,
-    shippingMethod,
-    customerEmail,
-    address,
-    cartItems,
-    totalPrice,
-    paymentMethod,
-  } = req.body;
-
-  // Separar los datos de la dirección si existen
-  const { street, number, piso, depto, city, province } = address || {};
-
-  // Validación condicional de datos según el método de envío
-  if (!customerName || !customerSurname || !customerDNI || !customerTelefono || !shippingMethod || !customerEmail || !cartItems || cartItems.length === 0 || !paymentMethod) {
-    return res.status(400).send({ message: 'Faltan datos necesarios' });
-  }
-
-  // Validar datos adicionales solo si es envío a domicilio
-  if (shippingMethod === 'domicilio' && (!street || !number || !city || !province)) {
-    return res.status(400).send({ message: 'Faltan datos de domicilio' });
-  }
-
+app.get('/api/orders', async (req, res) => {
   const gsapi = google.sheets({ version: 'v4', auth: client });
   const options = {
     spreadsheetId: '1C81BRGg-U8eJLFXXGYIPEwdkOMwWbsWXIKcYVWz68gY',
-    range: 'pedidos!A2:O',
-    valueInputOption: 'RAW',
-    resource: {
-      values: [
-        [
-          customerName,
-          customerSurname,
-          customerDNI,
-          customerTelefono,
-          shippingMethod,
-          customerEmail,
-          street || '',     // Datos de domicilio, opcionales si es envío a sucursal
-          number || '',
-          piso || '',
-          depto || '',
-          city || '',
-          province || '',
-          JSON.stringify(cartItems),
-          totalPrice,
-          paymentMethod,
-        ],
-      ],
-    },
+    range: 'pedidos!A2:O', // Ajusta este rango según tus columnas
   };
 
   try {
-    await gsapi.spreadsheets.values.append(options);
-    res.status(201).send('Orden creada exitosamente');
+    const response = await gsapi.spreadsheets.values.get(options);
+    const rows = response.data.values || [];
+
+    // Mapeo de los datos a un formato adecuado
+    const orders = rows.map((row) => {
+      return {
+        customerName: row[0],       // Suponiendo que la columna A es el nombre
+        customerSurname: row[1],    // Suponiendo que la columna B es el apellido
+        customerDNI: row[2],        // Columna C
+        customerTelefono: row[3],   // Columna D
+        shippingMethod: row[4],     // Columna E
+        customerEmail: row[5],      // Columna F
+        address: {
+          street: row[6],           // Columna G
+          number: row[7],           // Columna H
+          piso: row[8],             // Columna I
+          depto: row[9],            // Columna J
+          city: row[10],            // Columna K
+          province: row[11],        // Columna L
+        },
+        products: JSON.parse(row[12]), // Suponiendo que la columna M contiene los productos en formato JSON
+        totalPrice: row[13],        // Columna N
+        paymentMethod: row[14],     // Columna O
+      };
+    });
+
+    res.status(200).json(orders);
   } catch (error) {
-    console.error('Error al agregar la orden a Google Sheets:', error);
+    console.error('Error al obtener los pedidos de Google Sheets:', error);
     res.status(500).send({
       message: 'Error interno del servidor',
       error: error.message || 'Error desconocido',
@@ -216,6 +193,36 @@ app.get('/api/add-order', async (req, res) => {
   }
 });
 
+mercadopago.configure({
+  // Configura tus credenciales de Mercado Pago
+  access_token: 'TU_ACCESS_TOKEN',
+});
+
+router.post('/api/create-preference', async (req, res) => {
+  const { items, totalPrice } = req.body;
+
+  const preference = {
+    items: items.map(item => ({
+      title: item.brand + ' ' + item.model,
+      unit_price: item.price,
+      quantity: item.quantity,
+    })),
+    back_urls: {
+      success: 'http://localhost:3000/success', // Redirige aquí después de una compra exitosa
+      failure: 'http://localhost:3000/failure',
+      pending: 'http://localhost:3000/pending',
+    },
+    auto_return: 'approved',
+  };
+
+  try {
+    const response = await mercadopago.preferences.create(preference);
+    res.json({ init_point: response.body.init_point });
+  } catch (error) {
+    console.error('Error creating Mercado Pago preference:', error);
+    res.status(500).send('Error creating Mercado Pago preference');
+  }
+});
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Backend running at http://localhost:${PORT}`);

@@ -28,6 +28,7 @@
     "classnames": "^2.5.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "flowbite-react": "^0.10.2",
     "framer-motion": "^11.11.1",
     "nextui-cli": "^0.3.4",
     "pagedone": "^1.2.2",

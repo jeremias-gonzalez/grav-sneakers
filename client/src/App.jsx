@@ -6,6 +6,8 @@ import DataProvider from './assets/components/Context/DataContext';
 import ProductDetail from './assets/components/ProductDetail/ProductDetail';
 import Loader from './assets/components/ui/loader'; // Importa el componente Loader
 import BigCart from "./assets/components/BigCart/BigCart";
+import OrdersList from './assets/components/admin/OrderList';
+import Admin from './assets/components/admin/Admin';
 
 
 // Lazy loading del componente Categorias
@@ -40,6 +42,8 @@ function App() {
           />
           <Route path='/cart' element={<BigCart />} />
           <Route path='/detail' element={<ProductDetail />} />
+          <Route path='/admin' element={<Admin />} />
+          <Route path='/orders' element={<OrdersList />} />
           
           {/* Suspense envuelve la ruta /categories con el Loader como fallback */}
           <Route

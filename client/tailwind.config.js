@@ -1,11 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 const { nextui } = require("@nextui-org/react");
-
+const flowbite = require("flowbite-react/tailwind");
 export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
+    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+   
 
 
   ],
@@ -23,7 +24,8 @@ export default {
   },
   plugins: [
     require('@tailwindcss/aspect-ratio'),
-    nextui()
+    nextui(),
+    
   ],
 }
 

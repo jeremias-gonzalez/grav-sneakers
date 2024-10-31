@@ -42,6 +42,23 @@ const PaymentMethod = ({ onSelectPayment }) => (
      </div>
      </div>
     </label>
+    <label className='rounded-lg flex border border-custom-blue md:w-full w-full p-2'>
+        <input
+          className='mx-2 hidden-radio'
+          type="radio"
+          name="paymentMethod"
+          value="mercadoPago"
+          onChange={(e) => onSelectPayment(e.target.value)}
+        />
+        <label htmlFor="mercadoPago" className="custom-radio"></label>
+        <div className='flex gap-3'>
+          <img className='w-10 h-10 my-4 md:my-4 md:h-16 md:w-16' src="https://www.mercadopago.com.br/org-img/MP3/home/mercado-pago-icon.svg" alt="" />
+          <div className='flex flex-col my-3 md:my-3'>
+            <h1 className='montserrat2 text-sm md:text-lg md:mx-4'>Mercado Pago</h1>
+            <p className='montserrat text-xs md:text-sm md:mx-4'>Realiza tu pago de forma segura</p>
+          </div>
+        </div>
+      </label>
     </div>
   </div>
 );
@@ -185,6 +202,7 @@ const BigCart = () => {
                      <p className='montserrat '> Entre 6 a 9 dias habiles - $8.000</p> 
                      </div>
                     </label>
+                    <h3 className='montserrat uppercase my-5'>Punto de Entrega</h3>
                     <label className='rounded-lg gap-3 p-2 flex border border-custom-blue w-25'>
                         <input
                           className='hidden-radio'
@@ -198,7 +216,7 @@ const BigCart = () => {
                         <label htmlFor="showroom" className="custom-radio"></label>
                         <div className='flex flex-col'>
                           <p className='montserrat2 uppercase'>Nuestro Showroom - Gratis</p>
-                          <p className='montserrat'>Retiro inmediato en nuestro showroom</p>
+                          <p className='montserrat'>Entrega inmediata en nuestro showroom , 72hs despues de tu compra</p>
                         </div>
                       </label>
                   </div>
