@@ -4,20 +4,14 @@ const { google } = require('googleapis');
 const cors = require('cors');
 const app = express();
 const PORT =  3001;
-// const mercadopago = require('mercadopago');
-
-// // Configurar Mercado Pago
-// mercadopago.configure({
-//   access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN,
-//   // También puedes incluir el modo (test o producción) si es necesario
-//   // mode: 'test',
-// });
 
 // Lista de orígenes permitidos
 const allowedOrigins = [
   process.env.FRONTEND_URL, // Para desarrollo local
 , // Para Vercel
 ];
+
+
 
 // Configuración de CORS
 app.use(cors({
@@ -88,7 +82,72 @@ app.get('/api/sheet-data', async (req, res) => {
     });
   }
 });
+app.post('/api/add-product', async (req, res) => {
+  console.log("Datos recibidos:", req.body); 
+  const { id, brand, model, price, image } = req.body;
 
+  if (!id || !brand || !model || !price || !image) {
+    return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+  }
+
+  const gsapi = google.sheets({ version: 'v4', auth: client });
+  const options = {
+    spreadsheetId: '14JIBAQ90WU7_3g8RBe11B7PC-G-7kzUx-v_87P3x2Yw',
+    range: 'Products!A:E', 
+    valueInputOption: 'RAW',
+    resource: {
+      values: [[id, brand, model, price, image]],
+    },
+  };
+
+  try {
+    const result = await gsapi.spreadsheets.values.append(options);
+    console.log("Resultado de Google Sheets:", result.data);
+    res.status(200).json({ message: 'Producto agregado con éxito' });
+  } catch (error) {
+    console.error('Error al agregar el producto:', error.message);
+    res.status(500).json({ error: 'Error al agregar el producto', details: error.message });
+  }
+});
+app.delete('/api/delete-product', async (req, res) => {
+  const { id } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: 'El ID del producto es obligatorio' });
+  }
+
+  try {
+    // Obtenemos la hoja de Google Sheets
+    const gsapi = google.sheets({ version: 'v4', auth: client });
+
+    // Obtenemos todos los productos
+    const getOptions = {
+      spreadsheetId: '14JIBAQ90WU7_3g8RBe11B7PC-G-7kzUx-v_87P3x2Yw',
+      range: 'Products!A:E',
+    };
+    const sheetData = await gsapi.spreadsheets.values.get(getOptions);
+    const rows = sheetData.data.values;
+
+    // Buscamos el índice del producto a eliminar
+    const rowIndex = rows.findIndex((row) => row[0] === id);
+
+    if (rowIndex === -1) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+
+    // Eliminamos el producto
+    const deleteOptions = {
+      spreadsheetId: '14JIBAQ90WU7_3g8RBe11B7PC-G-7kzUx-v_87P3x2Yw',
+      range: `Products!A${rowIndex + 1}:E${rowIndex + 1}`,
+    };
+
+    await gsapi.spreadsheets.values.clear(deleteOptions);
+    res.status(200).json({ message: 'Producto eliminado con éxito' });
+  } catch (error) {
+    console.error('Error al eliminar el producto:', error.message);
+    res.status(500).json({ error: 'Error al eliminar el producto', details: error.message });
+  }
+});
 app.post('/api/add-order', async (req, res) => {
   const {
     customerName,
@@ -199,72 +258,9 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
-app.post('/api/add-product', async (req, res) => {
-  console.log("Datos recibidos:", req.body); // Imprime los datos recibidos
-  const {id, brand, model, price, image } = req.body;
-
-  // Verifica si hay campos vacíos
-  if (!id || !brand || !model || !price || !image) {
-    return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-  }
-
-  const gsapi = google.sheets({ version: 'v4', auth: client });
-  const options = {
-    spreadsheetId: '1C81BRGg-U8eJLFXXGYIPEwdkOMwWbsWXIKcYVWz68gY',
-    range: 'productos!A:G', // Asegúrate de que esto refleje la cantidad de columnas que tienes
-    valueInputOption: 'RAW',
-    resource: {
-      values: [[id, brand, model, price, image]], // Asegúrate de que esto sea lo que esperas
-    },
-  };
-
-  try {
-    const result = await gsapi.spreadsheets.values.append(options);
-    console.log("Resultado de Google Sheets:", result.data); // Imprime el resultado
-    res.status(200).json({ message: 'Producto agregado con éxito' });
-  } catch (error) {
-    console.error('Error al agregar el producto:', error.message); // Imprime el mensaje de error
-    console.error('Detalles del error:', error); // Imprime el objeto completo del error
-    res.status(500).json({ error: 'Error al agregar el producto', details: error.message });
-  }
-});
 
 
 
-// app.post('/api/create-preference', async (req, res) => {
-//   const { cartItems, customerEmail } = req.body;
-
-//   // Crear items para Mercado Pago
-//   const items = cartItems.map((item) => ({
-//     title: item.brand && item.model,  // Reemplaza "name" con el nombre del producto
-//     unit_price: item.price, // Reemplaza "price" con el precio del producto
-//     quantity: item.quantity, // Reemplaza "quantity" con la cantidad del producto
-//   }));
-
-//   // Configurar preferencia
-//   const preference = {
-//     items: items,
-//     payer: {
-//       email: customerEmail,
-//     },
-//     back_urls: {
-//       success: `${process.env.FRONTEND_URL}/success`,
-//       failure: `${process.env.FRONTEND_URL}/failure`,
-//       pending: `${process.env.FRONTEND_URL}/pending`,
-//     },
-//     auto_return: 'approved',
-//   };
-
-//   try {
-//     const response = await mercadopago.preferences.create(preference);
-//     res.json({ id: response.body.id }); // ID de la preferencia para redirigir al pago
-//   } catch (error) {
-//     console.error('Error al crear la preferencia de pago:', error);
-//     res.status(500).send('Error al crear la preferencia de pago');
-//   }
-// });
-
-// Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Backend running at http://localhost:${PORT}`);
 });

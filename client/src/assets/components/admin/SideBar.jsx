@@ -49,7 +49,7 @@ const SideBar = () => {
         <div className="h-full px-3 py-4 overflow-y-auto bg-custom-blue dark:bg-gray-800">
           <button
             onClick={closeSidebar}
-            className="mb-4 mt-[-.6rem] text-white hover:bg-gray-100 rounded-lg p-2"
+            className="mb-4 mt-[-.6rem] text-white hover:bg-gray-100 rounded-lg p-2 md:hidden"
           >
             <span  className="sr-only">Close sidebar</span>
             <svg
@@ -67,7 +67,7 @@ const SideBar = () => {
             </svg>
           </button>
      
-          <ul className="space-y-2 font-medium">
+          <ul className="space-y-2 font-medium md:my-20">
             {/* <li>
               <a
                 href="#"

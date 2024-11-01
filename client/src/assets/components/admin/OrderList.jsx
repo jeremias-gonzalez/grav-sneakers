@@ -54,14 +54,14 @@ const OrdersList = () => {
   return (
     <>
       <SideBar />
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto p-4 md:mx-96 md:px-96">
         <h2 className="text-2xl montserrat2 text-custom-blue text-center mb-6">Pedidos</h2>
         {loading && <p className="text-center">Cargando pedidos...</p>} {/* Mensaje de carga */}
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <ul className="space-y-4">
           {orders.map((order, index) => (
             <li key={index} className="bg-white shadow-md rounded-lg p-4 border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-              <div className="flex flex-col md:flex-row md:justify-between">
+              <div className="flex flex-col md:flex-row md:justify-between md:flex-row">
                 <div className="flex flex-col">
                   <span className="font-semibold">Nombre Completo: {order.customerName} {order.customerSurname}</span>
                   <span className="text-gray-500">Email: {order.customerEmail} | DNI: {order.customerDNI} | Numero de Teléfono: {order.customerTelefono}</span>

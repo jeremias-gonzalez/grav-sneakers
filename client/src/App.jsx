@@ -1,6 +1,4 @@
 import { useState, lazy, Suspense } from 'react';
-
-
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import DataProvider from './assets/components/Context/DataContext';
 import ProductDetail from './assets/components/ProductDetail/ProductDetail';
@@ -9,24 +7,19 @@ import BigCart from "./assets/components/BigCart/BigCart";
 import OrdersList from './assets/components/admin/OrderList';
 import Admin from './assets/components/admin/Admin';
 import AddProducts from './assets/components/admin/AddProducts';
-
+import Login from './assets/components/admin/Login';
 
 // Lazy loading del componente Categorias
 const Categorias = lazy(() =>
-  // Agrega un retardo de 2 segundos antes de resolver la promesa
   new Promise((resolve) => {
-    setTimeout(() => resolve(import('./assets/components/Categorias/Categorias' )), 2000);
-    
+    setTimeout(() => resolve(import('./assets/components/Categorias/Categorias')), 2000);
   })
-  
 );
+
 const Home = lazy(() =>
-  // Agrega un retardo de 2 segundos antes de resolver la promesa
   new Promise((resolve) => {
-    setTimeout(() => resolve(import('./assets/components/Home/Home' )), 2000);
-    
+    setTimeout(() => resolve(import('./assets/components/Home/Home')), 2000);
   })
-  
 );
 
 function App() {
@@ -34,19 +27,17 @@ function App() {
     <DataProvider>
       <BrowserRouter>
         <Routes>
-          <Route path='/'
-           element={
-           <Suspense fallback={<div className="flex justify-center items-center h-screen"><Loader/></div>}>
-           <Home />
+          <Route path='/' element={
+            <Suspense fallback={<div className="flex justify-center items-center h-screen"><Loader/></div>}>
+              <Home />
             </Suspense>
-            } 
-          />
+          } />
           <Route path='/cart' element={<BigCart />} />
           <Route path='/detail' element={<ProductDetail />} />
           <Route path='/admin' element={<Admin />} />
+          <Route path="/login" element={<Login />} /> {/* Aquí está la corrección */}
           <Route path='/admin/orders' element={<OrdersList />} />
           <Route path='/admin/productos' element={<AddProducts />} />
-          {/* Suspense envuelve la ruta /categories con el Loader como fallback */}
           <Route
             path='/categories'
             element={
@@ -62,4 +53,3 @@ function App() {
 }
 
 export default App;
-

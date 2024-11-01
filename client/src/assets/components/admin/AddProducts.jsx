@@ -28,14 +28,32 @@ const AddProducts = () => {
         price: productArray[3],
         image: productArray[4],
       }));
-
-      console.log("Datos transformados:", formattedData);
+  
       setProducts(formattedData);
     } catch (error) {
       console.error("Error al obtener productos:", error);
     }
   };
+  const handleDelete = async (productId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/delete-product`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: productId }),
+      });
 
+      if (response.ok) {
+        console.log('Producto eliminado con éxito');
+        fetchProducts(); // Actualiza la lista de productos después de eliminar
+      } else {
+        console.error('Error al eliminar el producto');
+      }
+    } catch (error) {
+      console.error("Error en la eliminación:", error);
+    }
+  };
   // Función para manejar el cambio en los campos del formulario
   const handleChange = (e) => {
     setNewProduct({ ...newProduct, [e.target.name]: e.target.value });
@@ -54,7 +72,10 @@ const AddProducts = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newProduct),
+        body: JSON.stringify({
+          ...newProduct,
+          price: Number(newProduct.price) // Asegura que el precio sea un número
+        }),
       });
 
       if (response.ok) {
@@ -64,10 +85,11 @@ const AddProducts = () => {
         setShowForm(false); // Cierra el formulario después de agregar
         setNewProduct({ id: '', brand: '', model: '', price: '', image: '' }); // Resetea el formulario
       } else {
-        console.error("Error al agregar el producto");
+        const errorData = await response.json();
+        console.error("Error al agregar el producto:", errorData.message || 'Error desconocido');
       }
     } catch (error) {
-      console.error("Error en el envío:", error);
+      console.error("Error en el envío:", error.message);
     } finally {
       setIsProcessing(false); // Restablecer el estado de procesamiento
     }
@@ -81,12 +103,20 @@ const AddProducts = () => {
   return (
     <div>
       <SideBar />
-      <div className='flex flex-col'>
+      <div className='flex flex-col md:mx-96 md:px-80'>
         <h2 className="text-2xl text-custom-blue montserrat2 mb-4 text-center my-5 mb-10 ">Lista de Productos</h2>
         <ul>
           {products.length > 0 ? (
             products.map((product, index) => (
-              <li key={index} className="p-4 border border-gray-200 mb-3 mx-10 ">
+              <li key={index} className="border border-gray-200 mb-3 mx-10 ">
+                           <button
+                  onClick={() => handleDelete(product.id)}
+                  className="mt-2 p-2 text-white rounded"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 24 24">
+    <path d="M 10 2 L 9 3 L 4 3 L 4 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 22 L 19 22 L 19 7 L 5 7 z M 8 9 L 10 9 L 10 20 L 8 20 L 8 9 z M 14 9 L 16 9 L 16 20 L 14 20 L 14 9 z"></path>
+</svg>
+                </button>
                 <img src={product.image} alt={product.model} className="w-40 h-40 mb-2 mx-auto rounded-lg " />
                 <div className='flex flex-col'>
                   <p className='text-center'><strong>ID:</strong> {product.id}</p>
@@ -94,6 +124,7 @@ const AddProducts = () => {
                   <p className='text-center'><strong>Modelo:</strong> {product.model}</p>
                   <p className='text-center'><strong>Precio:</strong> ${product.price}</p>
                 </div>
+     
               </li>
             ))
           ) : (
