@@ -2,6 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const { google } = require('googleapis');
 const cors = require('cors');
+// const bcrypt = require('bcryptjs');
+// const jwt = require('jsonwebtoken');
+// import {MercadoPagoConfig, Preference} from "mercadopago";
+// const clientMercadoPago = new MercadoPagoConfig({
+
+//   access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+// });
+// const jwtSecret = process.env.JWT_SECRET;
 const app = express();
 const PORT =  3001;
 
@@ -11,6 +19,70 @@ const allowedOrigins = [
 , // Para Vercel
 ];
 
+app.use(express.json());
+// app.post('/api/create_preference', async (req, res) => {
+//   const { cartItems } = req.body; // Suponemos que el carrito se envía en el cuerpo de la solicitud
+
+//   // Crear un arreglo de items a partir de cartItems
+//   const items = cartItems.map(item => ({
+//     title: item.title,
+//     unit_price: item.price, // Asegúrate de que el precio sea un número
+//     quantity: item.quantity,
+//   }));
+
+//   const preference = {
+//     items: items,
+//     back_urls: {
+//       success: 'https://tu-dominio.com/success',
+//       failure: 'https://tu-dominio.com/failure',
+//       pending: 'https://tu-dominio.com/pending',
+//     },
+//     auto_return: 'approved',
+//   };
+
+//   try {
+//     const response = await mercadopago.preferences.create(preference);
+//     res.json({ id: response.body.id });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Error al crear la preferencia');
+//   }
+// });
+
+
+
+// app.post('/api/login', async (req, res) => {
+//   const { username, password } = req.body;
+
+//   // Replace this with your actual user validation logic
+//   if (!username || !password) {
+//     return res.status(400).json({ message: 'Missing username or password' });
+// }
+
+// // Validate credentials here
+// if (validCredentials(username, password)) {
+//     return res.status(200).json({ message: 'Login successful' });
+// } else {
+//     return res.status(401).json({ message: 'Unauthorized' });
+  
+// }});
+
+// const authMiddleware = (req, res, next) => {
+//   const token = req.headers.authorization?.split(' ')[1];
+//   if (token) {
+//     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+//       if (err) return res.sendStatus(403);
+//       req.user = decoded;
+//       next();
+//     });
+//   } else {
+//     res.sendStatus(401);
+//   }
+// };
+
+// app.get('/api/admin', authMiddleware, (req, res) => {
+//   res.json({ message: 'Bienvenido al panel de administrador' });
+// });
 
 
 // Configuración de CORS
@@ -24,7 +96,7 @@ app.use(cors({
   },
 }));
 
-app.use(express.json());
+
 
 // Autenticación con Google Sheets
 const client = new google.auth.JWT(
@@ -258,7 +330,57 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
+app.put('/api/update-product', async (req, res) => {
+  const { id, brand, model, price, image } = req.body;
 
+  // Validar que se haya proporcionado un ID
+  if (!id) {
+    return res.status(400).json({ error: 'El ID del producto es obligatorio' });
+  }
+
+  // Validar que se proporcionen los campos necesarios para la actualización
+  if (!brand || !model || !price || !image) {
+    return res.status(400).json({ error: 'Todos los campos son obligatorios para la actualización' });
+  }
+
+  try {
+    // Obtenemos la hoja de Google Sheets
+    const gsapi = google.sheets({ version: 'v4', auth: client });
+
+    // Obtenemos todos los productos
+    const getOptions = {
+      spreadsheetId: '14JIBAQ90WU7_3g8RBe11B7PC-G-7kzUx-v_87P3x2Yw',
+      range: 'Products!A:E',
+    };
+
+    const sheetData = await gsapi.spreadsheets.values.get(getOptions);
+    const rows = sheetData.data.values;
+
+    // Buscamos el índice del producto a actualizar
+    const rowIndex = rows.findIndex((row) => row[0] === id);
+
+    if (rowIndex === -1) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+
+    // Actualizamos el producto en la hoja de cálculo
+    const updateOptions = {
+      spreadsheetId: '14JIBAQ90WU7_3g8RBe11B7PC-G-7kzUx-v_87P3x2Yw',
+      range: `Products!A${rowIndex + 1}:E${rowIndex + 1}`,
+      valueInputOption: 'RAW',
+      resource: {
+        values: [[id, brand, model, price, image]], // Asegúrate de que esto coincide con el orden de las columnas en tu hoja
+      },
+    };
+
+    await gsapi.spreadsheets.values.update(updateOptions);
+
+    res.status(200).json({ message: 'Producto actualizado con éxito' });
+  } catch (error) {
+    console.error('Error al actualizar el producto:', error.message);
+    res.status(500).json({ error: 'Error al actualizar el producto', details: error.message });
+  }
+});
 
 
 app.listen(PORT, () => {

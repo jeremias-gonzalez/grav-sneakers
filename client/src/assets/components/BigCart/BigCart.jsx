@@ -112,9 +112,16 @@ const BigCart = () => {
       });
 
       if (response.ok) {
-        console.log('Pedido enviado con éxito');
-        setOrderSubmitted(true);
-        setShowPaymentMethods(false);
+        const data = await response.json(); // Suponiendo que el backend devuelve datos JSON
+
+        // Verificar el método de pago y redirigir si es Mercado Pago
+        if (paymentMethod === 'mercadoPago') {
+          window.location.href = data.checkoutUrl; // Reemplaza con la URL del checkout que devuelvas desde el backend
+        } else {
+          console.log('Pedido enviado con éxito');
+          setOrderSubmitted(true);
+          setShowPaymentMethods(false);
+        }
       } else {
         console.error('Error al enviar el pedido:', response.statusText);
         alert('Hubo un error al realizar el pedido');
@@ -126,6 +133,7 @@ const BigCart = () => {
       setIsProcessing(false);
     }
   };
+
 
   const generateWhatsAppLink = (cart, total) => {
     const baseUrl = 'https://api.whatsapp.com/send?phone=543585181780';
@@ -145,55 +153,7 @@ const BigCart = () => {
     const link = generateWhatsAppLink(cart, totalPrice);
     window.open(link, '_blank');
   };
-  // const handleCheckout = async (event) => {
-  //   event.preventDefault();
-    
-  //   // Evitar múltiples envíos
-  //   if (isProcessing) return;
-    
-  //   setIsProcessing(true);
-  
-  //   // Enviar los datos del pedido
-  //   try {
-  //     const orderResponse = await fetch('https://tu-backend-url/api/add-order', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(orderData), // orderData contiene los detalles del pedido
-  //     });
-  
-  //     if (!orderResponse.ok) {
-  //       throw new Error('Error al enviar el pedido');
-  //     }
-  
-  //     // Redirigir según el método de pago seleccionado
-  //     if (paymentMethod === 'transferencia bancaria') {
-  //       setOrderSubmitted(true); // Esto mostrará el Bank detail
-  //     } else if (paymentMethod === 'mercado_pago') {
-  //       // Redireccionar al checkout de Mercado Pago
-  //       const mercadoPagoResponse = await fetch('https://tu-backend-url/api/mercado-pago', {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //         },
-  //         body: JSON.stringify(orderData),
-  //       });
-  
-  //       const mercadoPagoData = await mercadoPagoResponse.json();
-  //       if (mercadoPagoData.init_point) {
-  //         window.location.href = mercadoPagoData.init_point; // Redireccionar al checkout de Mercado Pago
-  //       } else {
-  //         throw new Error('Error al generar el link de Mercado Pago');
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error('Error en el proceso de checkout:', error);
-  //     alert('Hubo un error al procesar el pedido. Inténtalo de nuevo.');
-  //   } finally {
-  //     setIsProcessing(false);
-  //   }
- // };
+
   return (
     <>
       <Navbar />

@@ -1,64 +1,43 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
-
     try {
-      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/login`, {
+      const res = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token); // Almacena el token
-        // Redirige al panel de administración o realiza otra acción
-        window.location.href = '/admin';
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        navigate('/admin');
       } else {
-        const errorData = await response.json();
-        setError(errorData.error);
+        setError(data.message);
       }
-    } catch (err) {
-      setError('Error al iniciar sesión. Inténtalo de nuevo.');
+    } catch (error) {
+      setError('Error al conectar con el servidor');
     }
   };
 
   return (
     <div>
-      <h2>Iniciar Sesión</h2>
+      <h2>Iniciar sesión</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleLogin}>
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Contraseña:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        {error && <p>{error}</p>}
-        <button type="submit">Iniciar Sesión</button>
+        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <button type="submit">Iniciar sesión</button>
       </form>
     </div>
   );
-};
+}
 
 export default Login;

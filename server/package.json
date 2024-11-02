@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  
   "dependencies": {
     "@google-cloud/local-auth": "^2.1.0",
     "@mercadopago/sdk-react": "^0.0.19",
