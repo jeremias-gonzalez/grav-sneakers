@@ -115,7 +115,9 @@ const OrdersList = () => {
                     order.cartItems.map((item, itemIndex) => (
                       <div key={itemIndex} className="flex items-center mr-2 mt-1">
                         <img src={item.image} alt={`${item.brand} ${item.model}`} className="w-20 h-20 rounded" />
-                        <span className="mr-1">{item.brand} {item.model}</span>
+                       <div className='flex flex-col mx-5'> <span className="mr-1">{item.brand} {item.model}</span>
+                        <span className="mr-1">Cantidad:{item.quantity}</span>
+                        </div>
                       </div>
                     ))
                   ) : (
