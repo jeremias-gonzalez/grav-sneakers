@@ -121,10 +121,10 @@ export default function Navbar() {
               </div>
               <TabPanels as={Fragment}>
                 {navigation.categories.map((category) => (
-                  <TabPanel key={category.name} className="space-y-10 px-4 pb-8 pt-10">
+                  <TabPanel key={category.name} className="space-y-10 px-4 pb-8 pt-10 text-custom-blue">
                     <div className="grid grid-cols-2 gap-x-4">
                       {category.featured.map((item) => (
-                        <div key={item.name} className="group relative text-sm">
+                        <div key={item.name} className="group relative ">
                           <div className="aspect-h-1 aspect-w-1 overflow-hidden rounded-lg bg-gray-100 group-hover:opacity-75">
                             <img alt={item.imageAlt} src={item.imageSrc} className="object-cover object-center" />
                           </div>

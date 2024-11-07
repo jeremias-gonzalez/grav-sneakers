@@ -6,7 +6,7 @@ import { DataContext } from '../Context/DataContext';
 import classNames from 'classnames';
 import talles from "/public/imgs/ARG.png";
 import { motion } from 'framer-motion'; // Importa Framer Motion
-
+import CartElements from '../CartContent/CartElements';
 const ProductDialog = ({ product, open, closeDialog }) => {
   const { cart, setCart, orderForm, setOrderForm } = useContext(DataContext);
   const [selectedColor, setSelectedColor] = useState(null);
@@ -15,7 +15,7 @@ const ProductDialog = ({ product, open, closeDialog }) => {
   const [alertMessage, setAlertMessage] = useState('');
   const [showAlert, setShowAlert] = useState(false); // Estado para mostrar la alerta
   const [showModal, setShowModal] = useState(false); // Estado para mostrar u ocultar el modal
-
+  const [showCartModal, setShowCartModal] = useState(false); 
   const handleShowImage = () => {
     setShowModal(true); // Cambia el estado para mostrar el modal
   };
@@ -23,6 +23,11 @@ const ProductDialog = ({ product, open, closeDialog }) => {
   const handleCloseModal = () => {
     setShowModal(false); // Cambia el estado para cerrar el modal
   };
+  const handleCloseCartModal = () => {
+    setShowCartModal(false);
+   
+  };
+
 
   const addProduct = () => {
     const existingProduct = cart.find(item =>
@@ -54,13 +59,15 @@ const ProductDialog = ({ product, open, closeDialog }) => {
     setOrderForm(prevOrderForm => [...prevOrderForm, { ...product, size: selectedSize, quantity }]);
   
     // Mensaje de alerta
-    setAlertMessage('¡Producto agregado al carrito y al formulario de pedido!');
+    setAlertMessage('¡Producto agregado al carrito!');
     setShowAlert(true);
     setTimeout(() => {
       setShowAlert(false);
       setAlertMessage('');
     }, 3000);
-    closeDialog();
+
+    // Mostrar el modal del carrito
+    setShowCartModal(true);
   };
 
   const handleAddToCart = () => {
@@ -222,7 +229,7 @@ const ProductDialog = ({ product, open, closeDialog }) => {
 
               {/* Mensaje de alerta */}
               {showAlert && (
-                <div className="mt-2 text-red-500">
+                <div className="mt-2 montserrat text-custom-blue">
                   {alertMessage}
                 </div>
               )}
@@ -238,6 +245,33 @@ const ProductDialog = ({ product, open, closeDialog }) => {
           </motion.div>
         </div>
       </div>
+      {showCartModal && (
+  <Dialog open={showCartModal} onClose={handleCloseCartModal} className="relative z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-20 z-50 mt-[-10rem]">
+      <div className="flex items-center justify-center min-h-screen text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}  // Animación de entrada desde abajo
+          animate={{ opacity: 1, y: 0 }}     // Animación al mostrarse
+          exit={{ opacity: 0, y: 100 }}      // Animación al desaparecer
+          transition={{ duration: 0.5, ease: 'easeInOut' }} // Control de duración
+          className="relative w-full max-w-md p-6 mt-16 overflow-hidden text-left bg-white shadow-xl mx-5"
+        >
+          <button
+            type="button"
+            onClick={handleCloseCartModal}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
+          >
+            <XMarkIcon aria-hidden="true" className="w-6 h-6" />
+          </button>
+
+          {/* Renderizamos el componente Cart aquí */}
+          <CartElements cart={cart} />  {/* Pasa el estado de cart como prop */}
+        </motion.div>
+      </div>
+    </div>
+  </Dialog>
+)}
+
     </Dialog>
   );
 };

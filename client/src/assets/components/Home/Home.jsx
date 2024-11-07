@@ -28,7 +28,7 @@ const Home = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false); 
-    }, 2500);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -39,7 +39,7 @@ const Home = () => {
     setTimeout(() => {
       setVisibleProducts(prevVisible => prevVisible + 8); // Cargar 8 productos adicionales
       setLoadingMore(false);
-    }, 1500); // Simula un retardo de 1.5 segundos
+    }, 1000); // Simula un retardo de 1.5 segundos
   };
 
   return (

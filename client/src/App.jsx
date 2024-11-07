@@ -12,13 +12,13 @@ import Login from './assets/components/admin/Login';
 // Lazy loading del componente Categorias
 const Categorias = lazy(() =>
   new Promise((resolve) => {
-    setTimeout(() => resolve(import('./assets/components/Categorias/Categorias')), 2000);
+    setTimeout(() => resolve(import('./assets/components/Categorias/Categorias')), 1000);
   })
 );
 
 const Home = lazy(() =>
   new Promise((resolve) => {
-    setTimeout(() => resolve(import('./assets/components/Home/Home')), 2000);
+    setTimeout(() => resolve(import('./assets/components/Home/Home')), 1000);
   })
 );
 

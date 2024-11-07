@@ -53,9 +53,9 @@ const Products = ({ filteredProducts = [] }) => {  // Valor por defecto
               <div className="mt-7 md:mt-3">
                 <button
                   onClick={() => openDialog(product)}
-                  className="w-70 md:w-30 p-2 text-custom-blue rounded-xl text-xl md:text-sm montserrat hover:bg-white hover:text-custom-blue border border-custom-blue transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-blue"
+                  className="w-70 md:w-30 p-2 text-custom-blue underline rounded-xl text-xl md:text-sm montserrat hover:bg-white hover:text-custom-blue transition-colors duration-200  "
                 >
-                  Añadir Producto al Carrito
+                  Ver detalles
                 </button>
               </div>
             </div>

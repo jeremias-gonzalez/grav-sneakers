@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useContext, useState, useMemo , useEffect } from 'react';
 import { DataContext } from '../Context/DataContext';
 import './bigcart.css';
 import Navbar from '../Navbar/Navbar';
@@ -8,9 +8,81 @@ import Confetti from 'react-confetti';
 
 const PaymentMethod = ({ onSelectPayment }) => (
   <div className="payment-method-section">
-      <div className='flex justify-center mb-2'>
-                    <h1 className='font-kelsi2 text-4xl text-custom-blue '> <span className='montserrat'>2.</span> Pago</h1>
-                  </div>
+       <div>
+              <div className="overflow-hidden rounded-full bg-gray-200">
+                <div className="h-2 w-2/2 rounded-full bg-custom-blue"></div>
+              </div>
+
+              <ol className="my-2 grid grid-cols-3 text-sm font-medium text-gray-500">
+                <li className="flex items-center justify-start text-gray-900 sm:gap-1.5">
+                  <span className="hidden sm:inline">
+                     DATOS 
+                  </span>
+                  <svg
+                    className="size-6 sm:size-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
+                    />
+                  </svg> 
+                  <span className="hidden sm:inline">
+                  Y ENVIO
+                  </span>
+                  <svg
+                    className="size-6 sm:size-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                </li>
+
+                {/* <li className="flex items-center justify-center text-blue-600 sm:gap-1.5">
+                  <span className="hidden sm:inline"> Address </span>
+
+                 
+      </li> */}
+
+      <li className="flex items-center justify-end text-custom-blue sm:gap-1.5">
+        <span className="hidden sm:inline"> PAGO </span>
+
+        <svg
+          className="size-6 sm:size-5"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+          />
+        </svg>
+      </li>
+    </ol>
+  </div>
+
                   <hr className='mb-10 'style={{ boxShadow: '0 4px 10px rgba(0, 123, 255, 0.5)' }} />
     <h3 className='flex justify-center text-2xl montserrat2 mb-10 '>Método de Pago</h3>
     <div className='flex flex-col my-5'>
@@ -64,6 +136,7 @@ const PaymentMethod = ({ onSelectPayment }) => (
 );
 
 const BigCart = () => {
+  const [order, setOrder] = useState([]);
   const { cart, setCart } = useContext(DataContext);
   const [customerName, setCustomerName] = useState('');
   const [customerSurname, setCustomerSurname] = useState('');
@@ -75,6 +148,7 @@ const BigCart = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [ NumOrder, setNumOrder] = useState('');
   const [orderSubmitted, setOrderSubmitted] = useState(false);
   const [showPaymentMethods, setShowPaymentMethods] = useState(true);
 
@@ -90,6 +164,7 @@ const BigCart = () => {
     setIsProcessing(true);
 
     const orderData = {
+      NumOrder,
       customerName,
       customerSurname,
       customerEmail,
@@ -98,6 +173,7 @@ const BigCart = () => {
       shippingMethod,
       address,
       paymentMethod,
+      NumOrder,
       cartItems: cart,
       totalPrice
     };
@@ -133,8 +209,22 @@ const BigCart = () => {
       setIsProcessing(false);
     }
   };
-
-
+  const fetchNumOrder = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/orders`);
+      if (!response.ok) {
+        throw new Error('Error al obtener los pedidos');
+      }
+      const data = await response.json();
+      console.log('Datos de la respuesta:', data);
+  
+      // Obtener el primer número de pedido
+      const firstOrder = data[0]?.NumOrder || 'Sin Orden';
+      setNumOrder(firstOrder); // Cambié esto a setNumOrder
+    } catch (err) {
+      console.error(err);
+    }
+  };
   const generateWhatsAppLink = (cart, total) => {
     const baseUrl = 'https://api.whatsapp.com/send?phone=543585181780';
     let message = 'Hola!👟, realicé la compra de los siguientes productos y aqui va mi comprobante!:\n';
@@ -165,9 +255,84 @@ const BigCart = () => {
                 {/* Formulario de Datos de Contacto */}
                 <div className="section contact-info">
                 <div className="section shipping-method">
-                  <div className='flex justify-center mb-2'>
-                    <h1 className='font-kelsi2 text-4xl text-custom-blue '> <span className='montserrat'>1.</span> Envio</h1>
-                  </div>
+                <div>
+            <h2 className="sr-only">Steps</h2>
+
+            <div>
+              <div className="overflow-hidden rounded-full bg-gray-200">
+                <div className="h-2 w-1/2 rounded-full bg-custom-blue"></div>
+              </div>
+
+              <ol className="my-2 grid grid-cols-3 text-sm font-medium text-gray-500">
+                <li className="flex items-center justify-start text-custom-blue sm:gap-1.5">
+                  <span className="hidden sm:inline">
+                     DATOS 
+                  </span>
+                  <svg
+                    className="size-6 mx-2 sm:size-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
+                    />
+                  </svg> 
+                  <span className="hidden sm:inline">
+                  Y ENVIO
+                  </span>
+                  <svg
+                    className="size-6 mx-1 sm:size-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                </li>
+
+                {/* <li className="flex items-center justify-center text-blue-600 sm:gap-1.5">
+                  <span className="hidden sm:inline"> Address </span>
+
+                 
+      </li> */}
+
+      <li className="flex items-center justify-end sm:gap-1.5">
+        <span className="hidden sm:inline"> PAGO </span>
+
+        <svg
+          className="size-6 sm:size-5"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+          />
+        </svg>
+      </li>
+    </ol>
+  </div>
+</div>
                   <hr className='mb-10'style={{ boxShadow: '0 4px 10px rgba(90, 154, 119, 0.5)' }} />
                   <h3 className='montserrat uppercase my-5'>Medios de Envío</h3>
                   
@@ -271,12 +436,17 @@ const BigCart = () => {
                     />
                   </div>
                   <div className="input-group">
-                      <label className='montserrat2' htmlFor="customerDNI">DNI</label>
+                  <label className='montserrat2' htmlFor="customerDNI">DNI</label>
                       <input
                         type="text"
                         id="customerDNI"
                         value={customerDNI}
-                        onChange={(e) => setCustomerDNI(e.target.value)}
+                        onChange={(e) => {
+                          // Verificar que el valor solo tenga números y no exceda los 8 caracteres
+                          const newValue = e.target.value.replace(/\D/g, '').slice(0, 8);
+                          setCustomerDNI(newValue);
+                        }}
+                        maxLength={8} // Limita a 8 caracteres
                         required
                         disabled={isProcessing}
                       />
@@ -420,7 +590,7 @@ const BigCart = () => {
               </>
             ) : (
               <>
-                {showPaymentMethods && (
+                  {showPaymentMethods && (
                   <>
                     <PaymentMethod onSelectPayment={setPaymentMethod} />
                     {paymentMethod && (
@@ -443,7 +613,7 @@ const BigCart = () => {
                 {orderSubmitted && (
                   <div className="order-confirmation my-5 mx-5 md:mx-10 md:my-10">
                     <h3 className='font-kelsi2 text-custom-blue text-4xl'>¡Gracias por tu pedido!</h3>
-                 
+                    {NumOrder && <p>Número de Orden: {NumOrder}</p>}
                     <BankDetails />
                     <button
                 type="button"
@@ -486,7 +656,8 @@ const BigCart = () => {
           </div>
         </form>
       </div>
-      <Footer />
+    
+     
     </>
   );
 };

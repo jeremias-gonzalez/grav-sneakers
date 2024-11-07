@@ -13,14 +13,12 @@ const AddProducts = () => {
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [productAdded, setProductAdded] = useState(false);
-
-  // Función para obtener productos desde el backend
+  
   const fetchProducts = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/sheet-data`);
       const data = await response.json();
 
-      // Transformar los sub-arrays en objetos con propiedades específicas
       const formattedData = data.map((productArray) => ({
         id: productArray[0],
         brand: productArray[1],
@@ -28,12 +26,13 @@ const AddProducts = () => {
         price: productArray[3],
         image: productArray[4],
       }));
-  
+
       setProducts(formattedData);
     } catch (error) {
       console.error("Error al obtener productos:", error);
     }
   };
+
   const handleDelete = async (productId) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/delete-product`, {
@@ -46,7 +45,7 @@ const AddProducts = () => {
 
       if (response.ok) {
         console.log('Producto eliminado con éxito');
-        fetchProducts(); // Actualiza la lista de productos después de eliminar
+        fetchProducts();
       } else {
         console.error('Error al eliminar el producto');
       }
@@ -54,17 +53,27 @@ const AddProducts = () => {
       console.error("Error en la eliminación:", error);
     }
   };
-  // Función para manejar el cambio en los campos del formulario
+
   const handleChange = (e) => {
     setNewProduct({ ...newProduct, [e.target.name]: e.target.value });
   };
 
-  // Función para manejar el envío del formulario y agregar un nuevo producto
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    
+    reader.onloadend = () => {
+      setNewProduct({ ...newProduct, image: reader.result }); // Almacena la imagen en formato base64
+    };
+    
+    if (file) {
+      reader.readAsDataURL(file); // Convierte la imagen a base64
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsProcessing(true); // Establece el estado de procesamiento
-
-    console.log("Producto a agregar:", newProduct); // Verifica la estructura de los datos
+    setIsProcessing(true);
 
     try {
       const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/add-product`, {
@@ -74,16 +83,16 @@ const AddProducts = () => {
         },
         body: JSON.stringify({
           ...newProduct,
-          price: Number(newProduct.price) // Asegura que el precio sea un número
+          price: Number(newProduct.price)
         }),
       });
 
       if (response.ok) {
         console.log('Producto agregado con éxito');
-        fetchProducts(); // Refrescar productos para mostrar el nuevo producto agregado
-        setProductAdded(true); // Cambia el estado a verdadero cuando el producto se agrega
-        setShowForm(false); // Cierra el formulario después de agregar
-        setNewProduct({ id: '', brand: '', model: '', price: '', image: '' }); // Resetea el formulario
+        fetchProducts();
+        setProductAdded(true);
+        setShowForm(false);
+        setNewProduct({ id: '', brand: '', model: '', price: '', image: '' });
       } else {
         const errorData = await response.json();
         console.error("Error al agregar el producto:", errorData.message || 'Error desconocido');
@@ -91,18 +100,19 @@ const AddProducts = () => {
     } catch (error) {
       console.error("Error en el envío:", error.message);
     } finally {
-      setIsProcessing(false); // Restablecer el estado de procesamiento
+      setIsProcessing(false);
     }
   };
 
-  // Llamar a fetchProducts cuando se carga el componente
   useEffect(() => {
     fetchProducts();
   }, []);
+
   const handleEdit = (product) => {
-    setNewProduct(product); // Carga el producto a editar en el formulario
-    setShowForm(true); // Muestra el formulario
+    setNewProduct(product);
+    setShowForm(true);
   };
+
   return (
     <div>
       <SideBar />
@@ -112,13 +122,13 @@ const AddProducts = () => {
           {products.length > 0 ? (
             products.map((product, index) => (
               <li key={index} className="border border-gray-200 mb-3 mx-10 ">
-                           <button
+                <button
                   onClick={() => handleDelete(product.id)}
                   className="mt-2 p-2 text-white rounded"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 24 24">
-    <path d="M 10 2 L 9 3 L 4 3 L 4 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 22 L 19 22 L 19 7 L 5 7 z M 8 9 L 10 9 L 10 20 L 8 20 L 8 9 z M 14 9 L 16 9 L 16 20 L 14 20 L 14 9 z"></path>
-</svg>
+                    <path d="M 10 2 L 9 3 L 4 3 L 4 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 22 L 19 22 L 19 7 L 5 7 z M 8 9 L 10 9 L 10 20 L 8 20 L 8 9 z M 14 9 L 16 9 L 16 20 L 14 20 L 14 9 z"></path>
+                  </svg>
                 </button>
                 
                 <img src={product.image} alt={product.model} className="w-40 h-40 mb-2 mx-auto rounded-lg " />
@@ -128,7 +138,6 @@ const AddProducts = () => {
                   <p className='text-center'><strong>Modelo:</strong> {product.model}</p>
                   <p className='text-center'><strong>Precio:</strong> ${product.price}</p>
                 </div>
-     
               </li>
             ))
           ) : (
@@ -142,7 +151,6 @@ const AddProducts = () => {
           Agregar un producto
         </button>
       </div>
-      {/* Formulario emergente */}
       {showForm && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow-lg">
@@ -193,12 +201,11 @@ const AddProducts = () => {
                 />
               </div>
               <div className="mb-2">
-                <label className="block">Imagen (URL):</label>
+                <label className="block">Imagen:</label>
                 <input
-                  type="text"
-                  name="image"
-                  value={newProduct.image}
-                  onChange={handleChange}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
                   className="p-2 border border-gray-300 rounded w-full"
                   required
                 />
@@ -214,7 +221,7 @@ const AddProducts = () => {
                 <button
                   type="submit"
                   className="p-2 bg-custom-blue montserrat2 text-white rounded"
-                  disabled={isProcessing} // Deshabilita el botón mientras se procesa
+                  disabled={isProcessing}
                 >
                   {isProcessing ? 'Agregando...' : 'Agregar Producto'}
                 </button>

@@ -2,90 +2,17 @@ require('dotenv').config();
 const express = require('express');
 const { google } = require('googleapis');
 const cors = require('cors');
-// const bcrypt = require('bcryptjs');
-// const jwt = require('jsonwebtoken');
-// import {MercadoPagoConfig, Preference} from "mercadopago";
-// const clientMercadoPago = new MercadoPagoConfig({
 
-//   access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN,
-// });
-// const jwtSecret = process.env.JWT_SECRET;
 const app = express();
 const PORT =  3001;
 
-// Lista de orígenes permitidos
+
 const allowedOrigins = [
-  process.env.FRONTEND_URL, // Para desarrollo local
-, // Para Vercel
+  process.env.FRONTEND_URL, 
 ];
 
 app.use(express.json());
-// app.post('/api/create_preference', async (req, res) => {
-//   const { cartItems } = req.body; // Suponemos que el carrito se envía en el cuerpo de la solicitud
 
-//   // Crear un arreglo de items a partir de cartItems
-//   const items = cartItems.map(item => ({
-//     title: item.title,
-//     unit_price: item.price, // Asegúrate de que el precio sea un número
-//     quantity: item.quantity,
-//   }));
-
-//   const preference = {
-//     items: items,
-//     back_urls: {
-//       success: 'https://tu-dominio.com/success',
-//       failure: 'https://tu-dominio.com/failure',
-//       pending: 'https://tu-dominio.com/pending',
-//     },
-//     auto_return: 'approved',
-//   };
-
-//   try {
-//     const response = await mercadopago.preferences.create(preference);
-//     res.json({ id: response.body.id });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Error al crear la preferencia');
-//   }
-// });
-
-
-
-// app.post('/api/login', async (req, res) => {
-//   const { username, password } = req.body;
-
-//   // Replace this with your actual user validation logic
-//   if (!username || !password) {
-//     return res.status(400).json({ message: 'Missing username or password' });
-// }
-
-// // Validate credentials here
-// if (validCredentials(username, password)) {
-//     return res.status(200).json({ message: 'Login successful' });
-// } else {
-//     return res.status(401).json({ message: 'Unauthorized' });
-  
-// }});
-
-// const authMiddleware = (req, res, next) => {
-//   const token = req.headers.authorization?.split(' ')[1];
-//   if (token) {
-//     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-//       if (err) return res.sendStatus(403);
-//       req.user = decoded;
-//       next();
-//     });
-//   } else {
-//     res.sendStatus(401);
-//   }
-// };
-
-// app.get('/api/admin', authMiddleware, (req, res) => {
-//   res.json({ message: 'Bienvenido al panel de administrador' });
-// });
-
-
-// Configuración de CORS
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -221,7 +148,8 @@ app.delete('/api/delete-product', async (req, res) => {
   }
 });
 app.post('/api/add-order', async (req, res) => {
-  const {
+  const { 
+    NumOrder,
     customerName,
     customerSurname,
     customerDNI,
@@ -232,36 +160,67 @@ app.post('/api/add-order', async (req, res) => {
     cartItems,
     totalPrice,
     paymentMethod,
+   
   } = req.body;
 
   // Separar los datos de la dirección si existen
   const { street, number, piso, depto, city, province } = address || {};
 
-  // Validación condicional de datos según el método de envío
-  if (!customerName || !customerSurname || !customerDNI || !customerTelefono || !shippingMethod || !customerEmail || !cartItems || cartItems.length === 0 || !paymentMethod) {
-    return res.status(400).send({ message: 'Faltan datos necesarios' });
+  // Función de validación de datos
+  const validarDatos = () => {
+    if (
+      !customerName ||
+      !customerSurname ||
+      !customerDNI ||
+      !customerTelefono ||
+      !shippingMethod ||
+      !customerEmail ||
+      !cartItems ||
+      cartItems.length === 0 ||
+      !paymentMethod 
+    ) {
+      return 'Faltan datos necesarios';
+    }
+
+    if (
+      shippingMethod === 'domicilio' &&
+      (!street || !number || !city || !province)
+    ) {
+      return 'Faltan datos de domicilio';
+    }
+
+    return null;
+  };
+
+  const errorValidacion = validarDatos();
+  if (errorValidacion) {
+    return res.status(400).json({ message: errorValidacion });
   }
 
-  // Validar datos adicionales solo si es envío a domicilio
-  if (shippingMethod === 'domicilio' && (!street || !number || !city || !province)) {
-    return res.status(400).send({ message: 'Faltan datos de domicilio' });
-  }
+  // Generar un número de orden único usando la fecha y un número aleatorio
+  const generateOrderNumber = () => {
+    const timestamp = Date.now(); // Tiempo actual en milisegundos
+    const randomNum = Math.floor(Math.random() * 1000); // Número aleatorio de 3 dígitos
+    return `#${timestamp}-${randomNum}`;
+  };
+  const orderNumber = generateOrderNumber();
 
   const gsapi = google.sheets({ version: 'v4', auth: client });
   const options = {
     spreadsheetId: '1C81BRGg-U8eJLFXXGYIPEwdkOMwWbsWXIKcYVWz68gY',
-    range: 'pedidos!A2:O',
+    range: 'pedidos!A2:P', // Agregamos una columna extra para el número de orden
     valueInputOption: 'RAW',
     resource: {
       values: [
         [
+          orderNumber,        // Columna para el número de orden
           customerName,
           customerSurname,
           customerDNI,
           customerTelefono,
           shippingMethod,
           customerEmail,
-          street || '',     // Datos de domicilio, opcionales si es envío a sucursal
+          street || '',
           number || '',
           piso || '',
           depto || '',
@@ -270,6 +229,7 @@ app.post('/api/add-order', async (req, res) => {
           JSON.stringify(cartItems),
           totalPrice,
           paymentMethod,
+          NumOrder
         ],
       ],
     },
@@ -277,13 +237,53 @@ app.post('/api/add-order', async (req, res) => {
 
   try {
     await gsapi.spreadsheets.values.append(options);
-    res.status(201).send('Orden creada exitosamente');
+    res.status(201).json({ message: 'Orden creada exitosamente', orderNumber });
   } catch (error) {
-    console.error('Error al agregar la orden a Google Sheets:', error);
-    res.status(500).send({
+    console.error('Error al agregar la orden a Google Sheets:', error.message);
+    res.status(500).json({
       message: 'Error interno del servidor',
       error: error.message || 'Error desconocido',
     });
+  }
+});
+app.delete('/api/delete-order', async (req, res) => {
+  const { orderNumber, customerName, customerSurname } = req.body;
+
+  if (!orderNumber || !customerName || !customerSurname) {
+    return res.status(400).json({ error: 'El número de orden, nombre y apellido son obligatorios' });
+  }
+
+  const gsapi = google.sheets({ version: 'v4', auth: client });
+
+  try {
+    // Obtener todos los pedidos
+    const getOptions = {
+      spreadsheetId: '1C81BRGg-U8eJLFXXGYIPEwdkOMwWbsWXIKcYVWz68gY',
+      range: 'pedidos!A2:P',
+    };
+    const sheetData = await gsapi.spreadsheets.values.get(getOptions);
+    const rows = sheetData.data.values;
+
+    // Buscar el índice del pedido a eliminar
+    const rowIndex = rows.findIndex((row) => {
+      return row[0] === orderNumber && row[1] === customerName && row[2] === customerSurname;
+    });
+
+    if (rowIndex === -1) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    // Eliminar el pedido
+    const deleteOptions = {
+      spreadsheetId: '1C81BRGg-U8eJLFXXGYIPEwdkOMwWbsWXIKcYVWz68gY',
+      range: `pedidos!A${rowIndex + 2}:P${rowIndex + 2}`, // +2 para coincidir con la fila real en la hoja
+    };
+
+    await gsapi.spreadsheets.values.clear(deleteOptions);
+    res.status(200).json({ message: 'Pedido eliminado con éxito' });
+  } catch (error) {
+    console.error('Error al eliminar el pedido:', error.message);
+    res.status(500).json({ error: 'Error al eliminar el pedido', details: error.message });
   }
 });
 
@@ -292,31 +292,41 @@ app.get('/api/orders', async (req, res) => {
   const gsapi = google.sheets({ version: 'v4', auth: client });
   const options = {
     spreadsheetId: '1C81BRGg-U8eJLFXXGYIPEwdkOMwWbsWXIKcYVWz68gY',
-    range: 'pedidos!A2:O', // Ajusta el rango según tus columnas
+    range: 'pedidos!A2:P',
   };
 
   try {
     const response = await gsapi.spreadsheets.values.get(options);
     const rows = response.data.values || [];
+    // Imprime los datos obtenidos para revisión
+    console.log('Datos de Google Sheets:', rows);
 
-    // Mapeo de los datos a un formato adecuado
     const orders = rows.map((row) => {
+      let cartItems = [];
+      try {
+        cartItems = row[13] ? JSON.parse(row[13]) : [];
+      } catch (error) {
+        console.error('Error al convertir cartItems:', error);
+        cartItems = [];
+      }
+
       return {
-        customerName: row[0] || 'Sin nombre',       
-        customerSurname: row[1] || 'Sin apellido',   
-        customerDNI: row[2] || 'Sin DNI',            
-        customerTelefono: row[3] || 'Sin teléfono',   
-        shippingMethod: row[4] || 'Sin método de envío',
-        customerEmail: row[5] || 'Sin email',        
+        NumOrder: row[0] || 'Sin Número de pedido',
+        customerName: row[1] || 'Sin nombre',
+        customerSurname: row[2] || 'Sin apellido',
+        customerDNI: row[3] || 'Sin DNI',
+        customerTelefono: row[4] || 'Sin teléfono',
+        shippingMethod: row[5] || 'Sin método de envío',
+        customerEmail: row[6] || 'Sin email',
         address: {
-          street: row[6] || 'Sin dirección',
-          number: row[7] || 'Sin número',
-          city: row[10] || 'Sin ciudad',
-          province: row[11] || 'Sin provincia',
+          street: row[7] || 'Sin dirección',
+          number: row[8] || 'Sin número',
+          city: row[11] || 'Sin ciudad',
+          province: row[12] || 'Sin provincia',
         },
-        cartItems: row[12] ? JSON.parse(row[12]) : [], // Cambia a cartItems
-        totalPrice: row[13] || 'N/A',                 
-        paymentMethod: row[14] || 'Sin método de pago',
+        cartItems: Array.isArray(cartItems) ? cartItems : [], // Asegura que sea un array
+        totalPrice: row[14] || 'N/A',
+        paymentMethod: row[15] || 'Sin método de pago',
       };
     });
 
@@ -331,7 +341,7 @@ app.get('/api/orders', async (req, res) => {
 });
 
 app.put('/api/update-product', async (req, res) => {
-  const { id, brand, model, price, image } = req.body;
+  const {id, brand, model, price, image } = req.body;
 
   // Validar que se haya proporcionado un ID
   if (!id) {
